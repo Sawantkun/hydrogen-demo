@@ -149,7 +149,7 @@ function loadDeferredData({context}) {
     footer,
   };
 }
-// hello coderabbit
+// hello coderabbit bro
 /**
  * @param {{children?: React.ReactNode}}
  */
