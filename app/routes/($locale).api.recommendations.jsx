@@ -1,4 +1,3 @@
-import {json} from 'react-router';
 import {getGeminiRecommendations} from '~/lib/gemini';
 
 /**
@@ -7,14 +6,14 @@ import {getGeminiRecommendations} from '~/lib/gemini';
  */
 export async function action({request, context}) {
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return Response.json({error: 'Method not allowed'}, {status: 405});
   }
 
   try {
     const apiKey = context.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return json(
+      return Response.json(
         {error: 'Gemini API key not configured'},
         {status: 500},
       );
@@ -35,10 +34,10 @@ export async function action({request, context}) {
       userQuery,
     });
 
-    return json({recommendations}, {status: 200});
+    return Response.json({recommendations}, {status: 200});
   } catch (error) {
     console.error('Error in recommendations API:', error);
-    return json(
+    return Response.json(
       {error: error.message || 'Failed to get recommendations'},
       {status: 500},
     );
@@ -51,7 +50,7 @@ export async function action({request, context}) {
  */
 export async function loader({request, context}) {
   // For GET requests, you might want to return a simple status
-  return json(
+  return Response.json(
     {message: 'Use POST to get recommendations'},
     {status: 200},
   );
