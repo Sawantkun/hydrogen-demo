@@ -2,6 +2,7 @@ import {Await, useLoaderData, Link} from 'react-router';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {ProductItem} from '~/components/ProductItem';
+import {AIRecommender} from '~/components/AIRecommender';
 
 /**
  * @type {Route.MetaFunction}
@@ -54,8 +55,17 @@ function loadDeferredData({context}) {
       return null;
     });
 
+  // Load more products for AI recommender context
+  const allProductsForAI = context.storefront
+    .query(ALL_PRODUCTS_FOR_AI_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     recommendedProducts,
+    allProductsForAI,
   };
 }
 
@@ -66,7 +76,33 @@ export default function Homepage() {
     <div className="home">
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
+      <AIRecommenderSection
+        allProductsForAI={data.allProductsForAI}
+        recommendedProducts={data.recommendedProducts}
+      />
     </div>
+  );
+}
+
+/**
+ * Component to handle AI recommender with async data
+ * @param {{
+ *   allProductsForAI: Promise<any>;
+ *   recommendedProducts: Promise<any>;
+ * }}
+ */
+function AIRecommenderSection({allProductsForAI, recommendedProducts}) {
+  return (
+    <Suspense fallback={<div>Loading AI recommendations...</div>}>
+      <Await resolve={Promise.all([allProductsForAI, recommendedProducts])}>
+        {([productsData, recommendedData]) => (
+          <AIRecommender
+            availableProducts={productsData?.products?.nodes || []}
+            fallbackProducts={recommendedData?.products?.nodes || []}
+          />
+        )}
+      </Await>
+    </Suspense>
   );
 }
 
@@ -167,6 +203,37 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+`;
+
+const ALL_PRODUCTS_FOR_AI_QUERY = `#graphql
+  fragment ProductForAI on Product {
+    id
+    title
+    handle
+    description
+    vendor
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+  query AllProductsForAI ($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    products(first: 50, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...ProductForAI
       }
     }
   }

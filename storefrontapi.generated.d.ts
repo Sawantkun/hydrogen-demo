@@ -288,13 +288,6 @@ export type FooterQuery = {
   >;
 };
 
-export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
-
 export type FeaturedCollectionFragment = Pick<
   StorefrontAPI.Collection,
   'id' | 'title' | 'handle'
@@ -345,6 +338,47 @@ export type RecommendedProductsQuery = {
   products: {
     nodes: Array<
       Pick<StorefrontAPI.Product, 'id' | 'title' | 'handle'> & {
+        priceRange: {
+          minVariantPrice: Pick<
+            StorefrontAPI.MoneyV2,
+            'amount' | 'currencyCode'
+          >;
+        };
+        featuredImage?: StorefrontAPI.Maybe<
+          Pick<
+            StorefrontAPI.Image,
+            'id' | 'url' | 'altText' | 'width' | 'height'
+          >
+        >;
+      }
+    >;
+  };
+};
+
+export type ProductForAiFragment = Pick<
+  StorefrontAPI.Product,
+  'id' | 'title' | 'handle' | 'description' | 'vendor'
+> & {
+  priceRange: {
+    minVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+  };
+  featuredImage?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
+  >;
+};
+
+export type AllProductsForAiQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type AllProductsForAiQuery = {
+  products: {
+    nodes: Array<
+      Pick<
+        StorefrontAPI.Product,
+        'id' | 'title' | 'handle' | 'description' | 'vendor'
+      > & {
         priceRange: {
           minVariantPrice: Pick<
             StorefrontAPI.MoneyV2,
@@ -1185,6 +1219,94 @@ export type PredictiveSearchQuery = {
   }>;
 };
 
+export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
+
+export type BundleByHandleQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
+}>;
+
+export type BundleByHandleQuery = {
+  metaobject?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
+      fields: Array<
+        Pick<StorefrontAPI.MetaobjectField, 'key' | 'value' | 'type'> & {
+          reference?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'> & {
+              featuredImage?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Image, 'url' | 'altText'>
+              >;
+              variants: {
+                nodes: Array<
+                  Pick<StorefrontAPI.ProductVariant, 'id'> & {
+                    price: Pick<
+                      StorefrontAPI.MoneyV2,
+                      'amount' | 'currencyCode'
+                    >;
+                  }
+                >;
+              };
+              priceRange: {
+                minVariantPrice: Pick<
+                  StorefrontAPI.MoneyV2,
+                  'amount' | 'currencyCode'
+                >;
+              };
+            }
+          >;
+        }
+      >;
+    }
+  >;
+};
+
+export type CartLinesAddMutationVariables = StorefrontAPI.Exact<{
+  cartId: StorefrontAPI.Scalars['ID']['input'];
+  lines: Array<StorefrontAPI.CartLineInput> | StorefrontAPI.CartLineInput;
+}>;
+
+export type CartLinesAddMutation = {
+  cartLinesAdd?: StorefrontAPI.Maybe<{
+    cart?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Cart, 'id'> & {
+        lines: {
+          edges: Array<{
+            node:
+              | Pick<StorefrontAPI.CartLine, 'id' | 'quantity'>
+              | Pick<StorefrontAPI.ComponentizableCartLine, 'id' | 'quantity'>;
+          }>;
+        };
+      }
+    >;
+  }>;
+};
+
+export type CartCreateMutationVariables = StorefrontAPI.Exact<{
+  [key: string]: never;
+}>;
+
+export type CartCreateMutation = {
+  cartCreate?: StorefrontAPI.Maybe<{
+    cart?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Cart, 'id'>>;
+  }>;
+};
+
+export type BundlesQueryVariables = StorefrontAPI.Exact<{[key: string]: never}>;
+
+export type BundlesQuery = {
+  metaobjects: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
+        fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
+      }
+    >;
+  };
+};
+
 interface GeneratedQueryTypes {
   '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $headerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    menu(handle: $headerMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: HeaderQuery;
@@ -1194,10 +1316,6 @@ interface GeneratedQueryTypes {
     return: FooterQuery;
     variables: FooterQueryVariables;
   };
-  '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
-    return: StoreRobotsQuery;
-    variables: StoreRobotsQueryVariables;
-  };
   '#graphql\n  fragment FeaturedCollection on Collection {\n    id\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    handle\n  }\n  query FeaturedCollection($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...FeaturedCollection\n      }\n    }\n  }\n': {
     return: FeaturedCollectionQuery;
     variables: FeaturedCollectionQueryVariables;
@@ -1205,6 +1323,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  fragment RecommendedProduct on Product {\n    id\n    title\n    handle\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 4, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...RecommendedProduct\n      }\n    }\n  }\n': {
     return: RecommendedProductsQuery;
     variables: RecommendedProductsQueryVariables;
+  };
+  '#graphql\n  fragment ProductForAI on Product {\n    id\n    title\n    handle\n    description\n    vendor\n    priceRange {\n      minVariantPrice {\n        amount\n        currencyCode\n      }\n    }\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n  }\n  query AllProductsForAI ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 50, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...ProductForAI\n      }\n    }\n  }\n': {
+    return: AllProductsForAIQuery;
+    variables: AllProductsForAIQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
@@ -1254,9 +1376,30 @@ interface GeneratedQueryTypes {
     return: PredictiveSearchQuery;
     variables: PredictiveSearchQueryVariables;
   };
+  '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
+    return: StoreRobotsQuery;
+    variables: StoreRobotsQueryVariables;
+  };
+  '#graphql\n  query BundleByHandle($handle: String!) {\n    metaobject(handle: {handle: $handle, type: "bundle"}) {\n      id\n      handle\n      fields {\n        key\n        value\n        type\n        reference {\n          ... on Product {\n            id\n            handle\n            title\n            featuredImage {\n              url\n              altText\n            }\n            variants(first: 1) {\n              nodes {\n                id\n                price {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n            priceRange {\n              minVariantPrice {\n                amount\n                currencyCode\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: BundleByHandleQuery;
+    variables: BundleByHandleQueryVariables;
+  };
+  '#graphql\n  query Bundles {\n    metaobjects(type: "bundle", first: 20) {\n      nodes {\n        id\n        handle\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+    return: BundlesQuery;
+    variables: BundlesQueryVariables;
+  };
 }
 
-interface GeneratedMutationTypes {}
+interface GeneratedMutationTypes {
+  '#graphql\n  mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {\n    cartLinesAdd(cartId: $cartId, lines: $lines) {\n      cart {\n        id\n        lines(first: 50) {\n          edges {\n            node {\n              id\n              quantity\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: CartLinesAddMutation;
+    variables: CartLinesAddMutationVariables;
+  };
+  '#graphql\n  mutation CartCreate {\n    cartCreate {\n      cart {\n        id\n      }\n    }\n  }\n': {
+    return: CartCreateMutation;
+    variables: CartCreateMutationVariables;
+  };
+}
 
 declare module '@shopify/hydrogen' {
   interface StorefrontQueries extends GeneratedQueryTypes {}

@@ -379,6 +379,70 @@ button.reset:hover:not(:has(> *)) {
 
 /*
 * --------------------------------------------------
+* components/AIRecommender
+* --------------------------------------------------
+*/
+.ai-recommender {
+  margin: 3rem 0;
+  padding: 2rem 0;
+  border-top: 2px solid #e5e5e5;
+}
+
+.ai-recommender-header {
+  margin-bottom: 1.5rem;
+}
+
+.ai-recommender-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-recommender-title::before {
+  content: '🤖';
+  font-size: 1.5rem;
+}
+
+.ai-recommender-subtitle {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+  font-style: italic;
+}
+
+.ai-recommender-grid {
+  display: grid;
+  grid-gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  @media (min-width: 45em) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media (min-width: 64em) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.ai-recommender-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 1.125rem;
+}
+
+.ai-recommender-error {
+  padding: 1rem;
+  background-color: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  color: #92400e;
+  margin-bottom: 1rem;
+}
+
+/*
+* --------------------------------------------------
 * routes/collections._index.tsx
 * --------------------------------------------------
 */
