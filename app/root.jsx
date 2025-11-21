@@ -16,6 +16,8 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
+const GA_MEASUREMENT_ID = 'G-GW71H6E9KT';
+
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
  * @type {ShouldRevalidateFunction}
@@ -70,6 +72,14 @@ export async function loader(args) {
   const criticalData = await loadCriticalData(args);
 
   const {storefront, env} = args.context;
+  const checkoutDomain =
+    env.PUBLIC_CHECKOUT_DOMAIN ?? env.PUBLIC_STORE_DOMAIN ?? null;
+
+  if (!checkoutDomain) {
+    console.warn(
+      '[analytics] Missing PUBLIC_CHECKOUT_DOMAIN and PUBLIC_STORE_DOMAIN env vars.',
+    );
+  }
 
   return {
     ...deferredData,
@@ -80,7 +90,7 @@ export async function loader(args) {
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
     }),
     consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      checkoutDomain,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       withPrivacyBanner: false,
       // localize the privacy banner
@@ -139,7 +149,7 @@ function loadDeferredData({context}) {
     footer,
   };
 }
-
+// hello coderabbit
 /**
  * @param {{children?: React.ReactNode}}
  */
@@ -154,6 +164,22 @@ export function Layout({children}) {
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <script
+          async
+          nonce={nonce}
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        ></script>
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}');
+            `,
+          }}
+        />
         <Meta />
         <Links />
       </head>
