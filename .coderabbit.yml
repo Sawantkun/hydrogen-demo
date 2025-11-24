@@ -1,0 +1,13 @@
+tone:friendly
+verbosity: high
+strictness: lenient
+security_checks: true
+complexity_checks: true
+documentation_checks: true
+ignored_directories:
+  - tests
+  - docs
+brnch_rules:
+  main: strict
+  feature/*: lenient
+strictness: strict

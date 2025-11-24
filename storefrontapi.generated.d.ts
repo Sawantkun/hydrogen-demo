@@ -1236,68 +1236,98 @@ export type BundleByHandleQuery = {
       fields: Array<
         Pick<StorefrontAPI.MetaobjectField, 'key' | 'value' | 'type'> & {
           reference?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'> & {
-              featuredImage?: StorefrontAPI.Maybe<
-                Pick<StorefrontAPI.Image, 'url' | 'altText'>
-              >;
-              variants: {
-                nodes: Array<
-                  Pick<StorefrontAPI.ProductVariant, 'id'> & {
-                    price: Pick<
+            | {
+                __typename:
+                  | 'Collection'
+                  | 'Metaobject'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'GenericFile'} & Pick<
+                StorefrontAPI.GenericFile,
+                'id' | 'url' | 'alt'
+              >)
+            | ({__typename: 'MediaImage'} & Pick<
+                StorefrontAPI.MediaImage,
+                'id'
+              > & {
+                  image?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                  >;
+                })
+            | ({__typename: 'Product'} & Pick<
+                StorefrontAPI.Product,
+                'id' | 'handle' | 'title'
+              > & {
+                  featuredImage?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                  >;
+                  variants: {
+                    nodes: Array<
+                      Pick<
+                        StorefrontAPI.ProductVariant,
+                        'id' | 'availableForSale' | 'title'
+                      >
+                    >;
+                  };
+                  priceRange: {
+                    minVariantPrice: Pick<
                       StorefrontAPI.MoneyV2,
                       'amount' | 'currencyCode'
                     >;
-                  }
-                >;
-              };
-              priceRange: {
-                minVariantPrice: Pick<
-                  StorefrontAPI.MoneyV2,
-                  'amount' | 'currencyCode'
-                >;
-              };
-            }
+                  };
+                })
           >;
+          references?: StorefrontAPI.Maybe<{
+            nodes: Array<
+              | {
+                  __typename:
+                    | 'Collection'
+                    | 'GenericFile'
+                    | 'MediaImage'
+                    | 'Metaobject'
+                    | 'Model3d'
+                    | 'Page'
+                    | 'ProductVariant'
+                    | 'Video';
+                }
+              | ({__typename: 'Product'} & Pick<
+                  StorefrontAPI.Product,
+                  'id' | 'handle' | 'title'
+                > & {
+                    featuredImage?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.Image, 'url' | 'altText'>
+                    >;
+                    variants: {
+                      nodes: Array<
+                        Pick<
+                          StorefrontAPI.ProductVariant,
+                          'id' | 'availableForSale' | 'title'
+                        >
+                      >;
+                    };
+                    priceRange: {
+                      minVariantPrice: Pick<
+                        StorefrontAPI.MoneyV2,
+                        'amount' | 'currencyCode'
+                      >;
+                    };
+                  })
+            >;
+          }>;
         }
       >;
     }
   >;
 };
 
-export type CartLinesAddMutationVariables = StorefrontAPI.Exact<{
-  cartId: StorefrontAPI.Scalars['ID']['input'];
-  lines: Array<StorefrontAPI.CartLineInput> | StorefrontAPI.CartLineInput;
-}>;
-
-export type CartLinesAddMutation = {
-  cartLinesAdd?: StorefrontAPI.Maybe<{
-    cart?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.Cart, 'id'> & {
-        lines: {
-          edges: Array<{
-            node:
-              | Pick<StorefrontAPI.CartLine, 'id' | 'quantity'>
-              | Pick<StorefrontAPI.ComponentizableCartLine, 'id' | 'quantity'>;
-          }>;
-        };
-      }
-    >;
-  }>;
-};
-
-export type CartCreateMutationVariables = StorefrontAPI.Exact<{
+export type Bundles_QueryQueryVariables = StorefrontAPI.Exact<{
   [key: string]: never;
 }>;
 
-export type CartCreateMutation = {
-  cartCreate?: StorefrontAPI.Maybe<{
-    cart?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Cart, 'id'>>;
-  }>;
-};
-
-export type BundlesQueryVariables = StorefrontAPI.Exact<{[key: string]: never}>;
-
-export type BundlesQuery = {
+export type Bundles_QueryQuery = {
   metaobjects: {
     nodes: Array<
       Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
@@ -1380,26 +1410,17 @@ interface GeneratedQueryTypes {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
   };
-  '#graphql\n  query BundleByHandle($handle: String!) {\n    metaobject(handle: {handle: $handle, type: "bundle"}) {\n      id\n      handle\n      fields {\n        key\n        value\n        type\n        reference {\n          ... on Product {\n            id\n            handle\n            title\n            featuredImage {\n              url\n              altText\n            }\n            variants(first: 1) {\n              nodes {\n                id\n                price {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n            priceRange {\n              minVariantPrice {\n                amount\n                currencyCode\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query BundleByHandle($handle: String!) {\n    metaobject(handle: {handle: $handle, type: "bundle"}) {\n      id\n      handle\n      fields {\n        key\n        value\n        type\n        reference {\n          __typename\n          ... on Product {\n            id\n            handle\n            title\n            featuredImage {\n              url\n              altText\n            }\n            variants(first: 1) {\n              nodes {\n                id\n                availableForSale\n                title\n              }\n            }\n            priceRange {\n              minVariantPrice {\n                amount\n                currencyCode\n              }\n            }\n          }\n          ... on MediaImage {\n            id\n            image {\n              url\n              altText\n            }\n          }\n          ... on GenericFile {\n            id\n            url\n            alt\n          }\n        }\n        references(first: 20) {\n          nodes {\n            __typename\n            ... on Product {\n              id\n              handle\n              title\n              featuredImage {\n                url\n                altText\n              }\n              variants(first: 1) {\n                nodes {\n                  id\n                  availableForSale\n                  title\n                }\n              }\n              priceRange {\n                minVariantPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: BundleByHandleQuery;
     variables: BundleByHandleQueryVariables;
   };
-  '#graphql\n  query Bundles {\n    metaobjects(type: "bundle", first: 20) {\n      nodes {\n        id\n        handle\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
-    return: BundlesQuery;
-    variables: BundlesQueryVariables;
+  '#graphql\n  query BUNDLES_QUERY {\n    metaobjects(type: "bundle", first: 20) {\n      nodes {\n        id\n        handle\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+    return: BUNDLES_QUERYQuery;
+    variables: BUNDLES_QUERYQueryVariables;
   };
 }
 
-interface GeneratedMutationTypes {
-  '#graphql\n  mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {\n    cartLinesAdd(cartId: $cartId, lines: $lines) {\n      cart {\n        id\n        lines(first: 50) {\n          edges {\n            node {\n              id\n              quantity\n            }\n          }\n        }\n      }\n    }\n  }\n': {
-    return: CartLinesAddMutation;
-    variables: CartLinesAddMutationVariables;
-  };
-  '#graphql\n  mutation CartCreate {\n    cartCreate {\n      cart {\n        id\n      }\n    }\n  }\n': {
-    return: CartCreateMutation;
-    variables: CartCreateMutationVariables;
-  };
-}
+interface GeneratedMutationTypes {}
 
 declare module '@shopify/hydrogen' {
   interface StorefrontQueries extends GeneratedQueryTypes {}
