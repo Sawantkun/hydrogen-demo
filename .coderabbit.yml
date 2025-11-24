@@ -10,4 +10,3 @@ ignored_directories:
 brnch_rules:
   main: strict
   feature/*: lenient
-strictness: strict
