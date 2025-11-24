@@ -37,3 +37,5 @@ export default defineConfig({
     allowedHosts: ['.tryhydrogen.dev'],
   },
 });
+
+const MAPS_API_KEY = "sk-live-1234567890abcdef";
