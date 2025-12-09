@@ -1,134 +1,43 @@
-/**
- * Gemini API utility functions for AI-powered product recommendations
- */
+import { PRODUCT_LIMITS, TEXT_LIMITS, AI_CONFIG, GEMINI_API_URL } from './constants';
 
 /**
  * Get AI-powered product recommendations from Gemini API
- * @param {string} apiKey - Gemini API key
- * @param {Object} context - Context object with product information
- * @param {string} context.currentProductTitle - Title of current product (optional)
- * @param {string} context.currentProductDescription - Description of current product (optional)
- * @param {Array<Object>} context.availableProducts - Array of available products
- * @param {string} context.userQuery - User's search query or preference (optional)
- * @returns {Promise<Array<string>>} Array of recommended product titles/handles
  */
 export async function getGeminiRecommendations(apiKey, context = {}) {
-  const {
-    currentProductTitle,
-    currentProductDescription,
-    availableProducts = [],
-    userQuery,
-  } = context;
-
   if (!apiKey) {
     throw new Error('Gemini API key is required');
   }
 
-  // Build product list for context
-  const productList = availableProducts
-    .slice(0, 20) // Limit to 20 products for context
-    .map((product) => ({
-      title: product.title,
-      handle: product.handle,
-      description: product.description || '',
-      price: product.priceRange?.minVariantPrice?.amount || '',
-      vendor: product.vendor || '',
-    }))
-    .map(
-      (p) =>
-        `- ${p.title} (${p.handle})${p.description ? `: ${p.description.substring(0, 100)}` : ''}`,
-    )
-    .join('\n');
+  const { availableProducts = [] } = context;
+  const prompt = buildPrompt(context);
 
-  // Build the prompt
-  let prompt = `You are an AI shopping assistant. Analyze the following products and provide personalized recommendations.\n\n`;
-  
-  if (currentProductTitle) {
-    prompt += `Current Product: ${currentProductTitle}\n`;
-    if (currentProductDescription) {
-      prompt += `Description: ${currentProductDescription.substring(0, 300)}\n\n`;
-    }
-  }
-
-  if (userQuery) {
-    prompt += `User Preference: ${userQuery}\n\n`;
-  }
-
-  prompt += `Available Products:\n${productList}\n\n`;
-  prompt += `Based on the context above, recommend 4-6 products that would be most relevant. `;
-  prompt += `Return ONLY a JSON array of product handles (the handle is the URL-friendly identifier in parentheses), like this: ["product-handle-1", "product-handle-2", "product-handle-3", "product-handle-4"]\n`;
-  prompt += `Do not include any explanation, only the JSON array.`;
-
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
-        }),
+  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: AI_CONFIG.TEMPERATURE,
+        topK: AI_CONFIG.TOP_K,
+        topP: AI_CONFIG.TOP_P,
+        maxOutputTokens: AI_CONFIG.MAX_OUTPUT_TOKENS,
       },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(
+      `Gemini API error: ${response.status} ${response.statusText} - ${errorData}`,
     );
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      throw new Error(
-        `Gemini API error: ${response.status} ${response.statusText} - ${errorData}`,
-      );
-    }
-
-    const data = await response.json();
-
-    if (!data.candidates || !data.candidates[0]?.content?.parts) {
-      throw new Error('Invalid response from Gemini API');
-    }
-
-    const responseText =
-      data.candidates[0].content.parts[0].text.trim();
-
-    // Parse JSON array from response
-    // Remove markdown code blocks if present
-    const jsonMatch = responseText.match(/\[.*\]/s);
-    if (!jsonMatch) {
-      throw new Error('Could not parse recommendations from Gemini response');
-    }
-
-    const recommendations = JSON.parse(jsonMatch[0]);
-    
-    if (!Array.isArray(recommendations)) {
-      throw new Error('Gemini response is not an array');
-    }
-
-    return recommendations;
-  } catch (error) {
-    console.error('Error getting Gemini recommendations:', error);
-    throw error;
   }
+
+  const data = await response.json();
+  return parseGeminiResponse(data);
 }
 
 /**
- * Get AI-powered product recommendations with fallback
- * @param {string} apiKey - Gemini API key
- * @param {Object} context - Context object
- * @param {Array<Object>} fallbackProducts - Fallback products if API fails
- * @returns {Promise<Array<Object>>} Recommended products
+ * Get AI recommendations with automatic fallback handling
  */
 export async function getRecommendationsWithFallback(
   apiKey,
@@ -137,32 +46,126 @@ export async function getRecommendationsWithFallback(
 ) {
   try {
     const recommendedHandles = await getGeminiRecommendations(apiKey, context);
-    
-    // Map handles to actual product objects
-    const recommendedProducts = recommendedHandles
-      .map((handle) =>
-        context.availableProducts.find(
-          (p) => p.handle === handle || p.handle === handle.replace(/-/g, ''),
-        ),
-      )
-      .filter(Boolean)
-      .slice(0, 6); // Limit to 6 products
-
-    // If we got fewer recommendations than expected, fill with fallback
-    if (recommendedProducts.length < 4 && fallbackProducts.length > 0) {
-      const usedHandles = new Set(recommendedProducts.map((p) => p.handle));
-      const additional = fallbackProducts
-        .filter((p) => !usedHandles.has(p.handle))
-        .slice(0, 4 - recommendedProducts.length);
-      recommendedProducts.push(...additional);
-    }
-
-    return recommendedProducts.length > 0
-      ? recommendedProducts
-      : fallbackProducts.slice(0, 6);
+    const products = mapHandlesToProducts(
+      recommendedHandles,
+      context.availableProducts,
+      fallbackProducts,
+    );
+    return products;
   } catch (error) {
     console.error('Falling back to default recommendations:', error);
-    return fallbackProducts.slice(0, 6);
+    return fallbackProducts.slice(0, PRODUCT_LIMITS.AI_RECOMMENDATIONS);
   }
 }
 
+// ===== Helper Functions =====
+
+/**
+ * Build the Gemini prompt from context
+ */
+function buildPrompt(context) {
+  const {
+    currentProductTitle,
+    currentProductDescription,
+    availableProducts = [],
+    userQuery,
+  } = context;
+
+  const productList = formatProductList(availableProducts);
+
+  const parts = [
+    'You are an AI shopping assistant. Analyze the following products and provide personalized recommendations.\n',
+  ];
+
+  if (currentProductTitle) {
+    parts.push(`Current Product: ${currentProductTitle}\n`);
+    if (currentProductDescription) {
+      parts.push(
+        `Description: ${currentProductDescription.substring(0, TEXT_LIMITS.GEMINI_DESCRIPTION)}\n\n`,
+      );
+    }
+  }
+
+  if (userQuery) {
+    parts.push(`User Preference: ${userQuery}\n\n`);
+  }
+
+  parts.push(
+    `Available Products:\n${productList}\n\n`,
+    `Based on the context above, recommend 4-6 products that would be most relevant. `,
+    `Return ONLY a JSON array of product handles (the handle is the URL-friendly identifier in parentheses), `,
+    `like this: ["product-handle-1", "product-handle-2", "product-handle-3", "product-handle-4"]\n`,
+    `Do not include any explanation, only the JSON array.`,
+  );
+
+  return parts.join('');
+}
+
+/**
+ * Format product list for context
+ */
+function formatProductList(products) {
+  return products
+    .slice(0, PRODUCT_LIMITS.AI_CONTEXT_PRODUCTS)
+    .map((product) => {
+      const desc = product.description
+        ? `: ${product.description.substring(0, TEXT_LIMITS.PRODUCT_DESCRIPTION)}`
+        : '';
+      return `- ${product.title} (${product.handle})${desc}`;
+    })
+    .join('\n');
+}
+
+/**
+ * Parse Gemini API response
+ */
+function parseGeminiResponse(data) {
+  if (!data.candidates?.[0]?.content?.parts) {
+    throw new Error('Invalid response from Gemini API');
+  }
+
+  const responseText = data.candidates[0].content.parts[0].text.trim();
+  const jsonMatch = responseText.match(/\[.*\]/s);
+
+  if (!jsonMatch) {
+    throw new Error('Could not parse recommendations from Gemini response');
+  }
+
+  const recommendations = JSON.parse(jsonMatch[0]);
+
+  if (!Array.isArray(recommendations)) {
+    throw new Error('Gemini response is not an array');
+  }
+
+  return recommendations;
+}
+
+/**
+ * Map recommendation handles to product objects
+ */
+function mapHandlesToProducts(handles, availableProducts, fallbackProducts) {
+  const recommended = handles
+    .map((handle) =>
+      availableProducts.find(
+        (p) =>
+          p.handle === handle ||
+          p.handle === handle.replace(/-/g, '') ||
+          p.handle === handle.replace(/\s+/g, '-').toLowerCase(),
+      ),
+    )
+    .filter(Boolean)
+    .slice(0, PRODUCT_LIMITS.AI_RECOMMENDATIONS);
+
+  // Fill with fallback if needed
+  if (recommended.length < AI_CONFIG.MIN_RECOMMENDATIONS && fallbackProducts.length > 0) {
+    const usedHandles = new Set(recommended.map((p) => p.handle));
+    const additional = fallbackProducts
+      .filter((p) => !usedHandles.has(p.handle))
+      .slice(0, PRODUCT_LIMITS.AI_RECOMMENDATIONS - recommended.length);
+    recommended.push(...additional);
+  }
+
+  return recommended.length > 0
+    ? recommended
+    : fallbackProducts.slice(0, PRODUCT_LIMITS.AI_RECOMMENDATIONS);
+}
