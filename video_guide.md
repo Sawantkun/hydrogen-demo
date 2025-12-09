@@ -1,75 +1,83 @@
-# MODULE 11 — AI-Powered Refactoring with CodeRabbit Commands
-## Screen Recording Overview + Steps
+MODULE 13 — Explain & Understand Code using @coderabbit explain
+Screen Recording Overview + Steps
 
-**VIDEO GOAL:**
-Show how developers can use CodeRabbit’s `@coderabbit refactor` command to automatically improve code quality, structure, and readability without changing functionality.
+VIDEO GOAL:
+Show how @coderabbit explain helps developers quickly understand complex code, legacy files, unfamiliar logic, or third‑party contributions by generating clear explanations directly inside a Pull Request.
 
-**VIDEO STRUCTURE:**
-1. Intro (0:00–0:45)
-2. Show messy code example (0:45–2:00)
-3. Trigger @coderabbit refactor (2:00–4:00)
-4. Show CodeRabbit's suggestions (4:00–7:00)
-5. Apply changes & show before/after (7:00–10:00)
-6. Extra refactoring examples (10:00–11:30)
-7. Summary (11:30–12:00)
+VIDEO STRUCTURE:
+1. Intro (0:00–0:40)
+2. Show complex or confusing code (0:40–2:00)
+3. Trigger @coderabbit explain (2:00–3:00)
+4. Review CodeRabbit’s explanation (3:00–5:30)
+5. Use explanations for documentation & onboarding (5:30–7:00)
+6. Summary (7:00–8:00)
 
----
+---------------------------------------------
+DETAILED SCREEN RECORDING STEPS
+---------------------------------------------
 
-### DETAILED SCREEN RECORDING STEPS
+PART 1 — Video Introduction (0:00 – 0:40)
+- Show GitHub PR page.
+- Highlight a file or function that looks complicated.
+- Overlay text:
+  “Use @coderabbit explain to instantly understand unfamiliar code.”
 
-#### PART 1 — Video Introduction (0:00 – 0:45)
-- **Action:** Show GitHub PR page.
-- **Action:** Zoom into PR title and CodeRabbit sidebar.
-- **Overlay text:** “Refactoring is one of the most powerful CodeRabbit commands.”
+PART 2 — Show Complex or Confusing Code (0:40 – 2:00)
+- Open a file with:
+  - long functions
+  - nested conditionals
+  - unclear variable names
+  - legacy patterns
+- Scroll slowly through the code.
+- Zoom in on areas that would normally require manual explanation.
+- Overlay text:
+  “Hard to understand at first glance.”
 
-#### PART 2 — Show a Messy Code Example (0:45 – 2:00)
-- **Action:** Open `app/routes/messy-example.jsx`.
-- **Note:** It has `var` usage, poor naming, repeated logic, inline styles.
-- **Action:** Slowly scroll and zoom into issues.
-- **Overlay text:** “Messy function → Hard to maintain.”
+PART 3 — Trigger @coderabbit explain (2:00 – 3:00)
+- Add a new PR comment:
+    @coderabbit explain
+- Optional targeted usage:
+    @coderabbit explain this function
+    @coderabbit explain this block
+- Explain that CodeRabbit generates:
+  - step-by-step logic explanation
+  - purpose of the code
+  - input/output details
+  - potential risks or assumptions
 
-#### PART 3 — Trigger @coderabbit refactor (2:00 – 4:00)
-- **Action:** Add a comment on the PR or file:
-  ```
-  @coderabbit refactor
-  ```
-- **Voiceover/Explain:** CodeRabbit analyzes structure, readability, naming, repetition—without changing functionality.
+PART 4 — Review CodeRabbit’s Explanation (3:00 – 5:30)
+- Scroll through the AI-generated explanation.
+- Highlight key sections:
+  - High-level summary
+  - Detailed breakdown of function flow
+  - Explanation of each condition or branch
+  - Notes on data structures
+  - Potential edge cases
+- Overlay:
+  “Readable • Accurate • Developer-friendly”
+- Explain how this reduces reviewer time and helps junior developers.
 
-#### PART 4 — Show CodeRabbit’s Suggestions (4:00 – 7:00)
-- **Action:** Scroll AI response.
-- **Highlight improvements:**
-  - `var` → `let/const`
-  - Better naming (e.g., `d` → `date`)
-  - Extracted helper functions (date formatting)
-  - Removed duplicate code
-  - Clean structure
-- **Overlay text:** “Modern syntax • No behavioral change”
+PART 5 — Use Explanations for Documentation & Onboarding (5:30 – 7:00)
+Show practical uses:
+- Converting explanation into docstrings
+- Adding explanation to README
+- Summarizing legacy modules for new team members
+- Using explanations to understand external contributor PRs
 
-#### PART 5 — Apply Changes & Before/After (7:00 – 10:00)
-- **Action:** Click Apply Patch or commit changes.
-- **Action:** Show diff comparison.
-- **Highlight:**
-  - Smaller functions
-  - Clean naming
-  - Reduced code size
-- **Overlay text:** “Before | After”
+Optional examples:
+    @coderabbit explain why this is failing
+    @coderabbit explain the algorithm
 
-#### PART 6 — Extra Mini Examples (10:00 – 11:30)
-*Action: Show adding these comments*
+PART 6 — Summary (7:00 – 8:00)
+- Show final PR with explanation comment.
+- Overlay bullet points:
+  - Understand complex logic instantly
+  - Great for onboarding and documentation
+  - Helps reviewers catch mistakes earlier
+  - Works for any file, block, or function
+- Closing line:
+  “@coderabbit explain turns confusing code into clear, structured understanding.”
 
-**Example 1: Convert callbacks to async/await**
-> `@coderabbit refactor this to async/await`
-
-**Example 2: Remove duplication**
-> `@coderabbit refactor for duplication removal`
-
-**Example 3: Extract React components**
-> `@coderabbit refactor into smaller components`
-
-#### PART 7 — Summary (11:30 – 12:00)
-- **Action:** Show PR overview.
-- **Overlay bullet points:**
-  - Faster reviews
-  - Zero-impact refactors
-  - Great for legacy cleanup
-- **Closing line:** “Refactoring with CodeRabbit instantly improves code quality.”
+---------------------------------------------
+END OF FILE
+---------------------------------------------
