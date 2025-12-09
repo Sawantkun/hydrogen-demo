@@ -37,3 +37,4 @@ export default defineConfig({
     allowedHosts: ['.tryhydrogen.dev'],
   },
 });
+
